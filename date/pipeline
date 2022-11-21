@@ -1,0 +1,14 @@
+pipeline {
+    agent any
+    parameters {
+      string defaultValue: 'Nov21,2022', description: 'Today\'s date', name: 'date'
+}
+stages {
+    stage('date') {
+        steps {
+           echo "Hi ${date}, Today date" 
+        }
+    }
+}
+    
+}
