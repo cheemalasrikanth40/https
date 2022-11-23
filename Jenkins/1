@@ -1,0 +1,19 @@
+FROM ubuntu:20.04 AS java
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt update && apt install -y sudo openjdk-8-jdk git maven gnupg wget -y
+FROM ubuntu:20.04 AS jenkins
+ENV DEBIAN_FRONTEND noninteractive
+RUN rm -rf /usr/lib/* /usr/include/*
+COPY --from=java /usr/bin/java /usr/bin/git /usr/bin/wget /usr/bin/sudo /usr/bin/
+COPY --from=java /usr/share/java/ /usr/share/java/
+COPY --from=java /usr/share/gnupg /usr/share/
+COPY --from=java /usr/share/man/man1/java.1.gz /usr/share/gnupg /usr/share/info/gnupg.info-1.gz /usr/share/info/gnupg.info.gz /usr/share/info/gnupg.info-2.gz
+COPY --from=java /usr/lib/ /usr/lib/
+COPY --from=java /etc/maven /etc/sudoers /etc/
+RUN apt update && wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - &&\
+    sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list' &&\
+    apt update &&\
+    apt install jenkins -y
+
+COPY startup.sh /
+ENTRYPOINT ["/startup.sh"]
